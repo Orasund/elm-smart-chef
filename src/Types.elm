@@ -1,8 +1,11 @@
 module Types exposing (..)
 
+import Bridge as ToBackend exposing (ToBackend(..))
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
+import Data.Dish as Meal exposing (Dish)
 import Gen.Pages as Pages
+import Random exposing (Seed)
 import Shared exposing (Flags)
 import Url exposing (Url)
 
@@ -24,17 +27,19 @@ type FrontendMsg
 
 
 type alias BackendModel =
-    { message : String
+    { meal : Dish
+    , seed : Seed
     }
 
 
-type ToBackend
-    = NoOpToBackend
-
-
 type BackendMsg
-    = NoOpBackendMsg
+    = NewSeed Seed
 
 
 type ToFrontend
-    = NoOpToFrontend
+    = NewMeal Dish
+    | NoOpToFrontend
+
+
+type alias ToBackend =
+    ToBackend.ToBackend

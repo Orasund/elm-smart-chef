@@ -4,7 +4,7 @@ This starter application is built with:
 
 - [elm-spa](https://elm-spa.dev), a friendly tool for building SPAs with Elm!
 - [Lamdera](https://lamdera.com), a delightful platform
-for full-stack web apps
+  for full-stack web apps
 
 It demonstrates how to get started with `elm-spa` on Lamdera.
 
@@ -13,7 +13,6 @@ For a full fledged application, check out the [lamdera-realworld](https://github
 ## With `elm-ui`
 
 If you'd like to use `elm-ui`, check out the [elm-ui branch](https://github.com/lamdera/elm-spa-lamdera/tree/elm-ui) for the adjustments.
-
 
 ## Dependencies
 
@@ -24,7 +23,6 @@ npm install -g elm elm-spa
 ```
 
 You can [get the `lamdera` binary from here](https://dashboard.lamdera.app/docs/download).
-
 
 ## Running locally
 
@@ -42,7 +40,6 @@ Note: the `.elm-spa` folder currently needs to be committed to successfully depl
 
 See [Getting Started](https://lamdera.com/start) if you're new to Lamdera.
 
-
 ### Other `elm-spa` commands
 
 ```bash
@@ -50,7 +47,6 @@ elm-spa add    # add a new page to the application
 elm-spa build  # production build
 elm-spa watch  # runs build as you code (without the server)
 ```
-
 
 ## Learn more
 

@@ -1,6 +1,11 @@
 module Pages.Home_ exposing (Model, Msg(..), page)
 
-import Element exposing (..)
+import Bridge exposing (..)
+import Data.Dish exposing (Dish)
+import Effect exposing (Effect)
+import Element
+import Element.Input as Input
+import Lamdera
 import Page
 import Request exposing (Request)
 import Shared
@@ -37,12 +42,18 @@ init shared =
 
 
 type Msg
-    = Noop
+    = CreateMeal
+    | Noop
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Cmd Msg )
 update shared msg model =
     case msg of
+        CreateMeal ->
+            ( model
+            , StartCooking |> sendToBackend
+            )
+
         Noop ->
             ( model
             , Cmd.none
@@ -61,5 +72,52 @@ subscriptions _ =
 view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = ""
-    , body = text "Home"
+    , body =
+        [ (case shared.meal of
+            Nothing ->
+                "Hunger?" |> Element.text
+
+            Just meal ->
+                meal.base
+                    ++ " mit "
+                    ++ (case meal.ingredients of
+                            [] ->
+                                "Sauce"
+
+                            [ a ] ->
+                                a.name
+
+                            head :: tail ->
+                                (tail
+                                    |> List.map .name
+                                    |> String.join ", "
+                                )
+                                    ++ " und "
+                                    ++ head.name
+                       )
+                    |> Element.text
+          )
+            |> Element.el [ Element.centerX, Element.centerY ]
+        , Input.button [ Element.centerX, Element.centerY ]
+            { onPress = Just CreateMeal
+            , label =
+                Element.text
+                    (case shared.meal of
+                        Just _ ->
+                            "Noch ein Gericht"
+
+                        Nothing ->
+                            "Start"
+                    )
+            }
+        ]
+            |> Element.column
+                [ Element.centerY
+                , Element.centerX
+                , Element.spacing 10
+                ]
+            |> Element.el
+                [ Element.height <| Element.fill
+                , Element.width <| Element.fill
+                ]
     }

@@ -46,7 +46,11 @@ init url key =
         ( page, effect ) =
             Pages.init (Route.fromUrl url) shared url key
     in
-    ( FrontendModel url key shared page
+    ( { url = url
+      , key = key
+      , shared = shared
+      , page = page
+      }
     , Cmd.batch
         [ Cmd.map Shared sharedCmd
         , Effect.toCmd ( Shared, Page ) effect
@@ -128,7 +132,18 @@ update msg model =
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
 updateFromBackend msg model =
+    let
+        shared =
+            model.shared
+    in
     case msg of
+        NewMeal meal ->
+            ( { model
+                | shared = { shared | meal = Just meal }
+              }
+            , Cmd.none
+            )
+
         NoOpToFrontend ->
             ( model, Cmd.none )
 
