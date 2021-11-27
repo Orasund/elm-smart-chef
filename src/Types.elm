@@ -5,6 +5,7 @@ import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
 import Data.Chef exposing (Chef)
 import Data.Dish as Meal exposing (Dish)
+import Data.Ingredient exposing (Ingredient)
 import Gen.Pages as Pages
 import Random exposing (Seed)
 import Shared exposing (Flags)
@@ -28,7 +29,7 @@ type FrontendMsg
 
 
 type alias BackendModel =
-    { meal : Dish
+    { dish : Dish
     , chef : Chef
     , seed : Seed
     }
@@ -39,8 +40,8 @@ type BackendMsg
 
 
 type ToFrontend
-    = NewMeal Dish
-    | NoOpToFrontend
+    = NewDish Dish Ingredient
+    | NoDishFound
 
 
 type alias ToBackend =

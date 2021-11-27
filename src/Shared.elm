@@ -9,6 +9,7 @@ module Shared exposing
     )
 
 import Data.Dish as Meal exposing (Dish)
+import Data.Ingredient exposing (Ingredient)
 import Element exposing (..)
 import Element.Region as Region
 import Request exposing (Request)
@@ -24,12 +25,16 @@ type alias Flags =
 
 
 type alias Model =
-    { meal : Maybe Dish }
+    { meal : Maybe Dish
+    , ingredient : Maybe Ingredient
+    }
 
 
 init : Request -> Flags -> ( Model, Cmd Msg )
 init _ json =
-    ( { meal = Nothing }
+    ( { meal = Nothing
+      , ingredient = Nothing
+      }
     , Cmd.none
     )
 

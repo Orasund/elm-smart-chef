@@ -7,7 +7,7 @@ import Dict
 import Gen.Msg
 import Lamdera exposing (ClientId, SessionId)
 import Pages.Home_
-import Random
+import Random exposing (Generator)
 import Random.List
 import Task
 import Types exposing (BackendModel, BackendMsg(..), ToFrontend(..))
@@ -28,7 +28,7 @@ app =
 
 init : ( Model, Cmd BackendMsg )
 init =
-    ( { meal =
+    ( { dish =
             { base = "Reis"
             , ingredients = []
             }
@@ -50,28 +50,81 @@ update msg model =
             ( { model | seed = seed }, Cmd.none )
 
 
+suggestIngredient : Generator (Maybe Ingredient) -> ClientId -> Model -> ( Model, Cmd BackendMsg )
+suggestIngredient randIngredient clientId model =
+    let
+        ( maybeIngredient, seed ) =
+            Random.step randIngredient model.seed
+    in
+    ( { model
+        | seed = seed
+      }
+    , case maybeIngredient of
+        Just ingredient ->
+            NewDish
+                model.dish
+                ingredient
+                |> Lamdera.sendToFrontend clientId
+
+        Nothing ->
+            NoDishFound
+                |> Lamdera.sendToFrontend clientId
+    )
+
+
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
+        Include ingredient ->
+            let
+                dish =
+                    model.dish
+
+                ingredients =
+                    ingredient :: dish.ingredients
+            in
+            { model
+                | dish = { dish | ingredients = ingredients }
+            }
+                |> suggestIngredient
+                    (ingredients
+                        |> Chef.chooseIngredient model.chef
+                    )
+                    clientId
+
+        ChooseIngredient ->
+            model
+                |> suggestIngredient
+                    (model.dish.ingredients
+                        |> Chef.chooseIngredient model.chef
+                    )
+                    clientId
+
         StartCooking ->
             let
-                ( ingredients, seed ) =
-                    case Chef.list of
-                        head :: tail ->
-                            Random.step
-                                (tail
-                                    |> Random.uniform head
-                                    |> Random.andThen Chef.cook
-                                )
-                                model.seed
-
-                        _ ->
-                            ( [], model.seed )
+                dish =
+                    { base = "Reis"
+                    , ingredients = []
+                    }
             in
-            ( { model | seed = seed }
-            , { base = "Reis"
-              , ingredients = ingredients
-              }
-                |> NewMeal
-                |> Lamdera.sendToFrontend clientId
-            )
+            case Chef.list of
+                head :: tail ->
+                    model.seed
+                        |> Random.step
+                            (tail
+                                |> Random.uniform head
+                                |> Random.map
+                                    (\chef -> { model | chef = chef, dish = dish })
+                            )
+                        |> (\( m, seed ) ->
+                                { m | seed = seed }
+                                    |> suggestIngredient
+                                        (Chef.chooseFirstIngredient m.chef)
+                                        clientId
+                           )
+
+                [] ->
+                    ( model
+                    , NoDishFound
+                        |> Lamdera.sendToFrontend clientId
+                    )

@@ -1,4 +1,4 @@
-module Data.Chef exposing (Chef, cook, list)
+module Data.Chef exposing (Chef, chooseFirstIngredient, chooseIngredient, cook, list)
 
 import Data.Ingredient as Ingredient exposing (Ingredient)
 import Data.Property as Property exposing (Property)
@@ -37,15 +37,26 @@ list =
 
 cook : Chef -> Generator (List Ingredient)
 cook chef =
+    let
+        addIngredient l maybeI =
+            maybeI
+                |> Maybe.map (\a -> a :: l)
+                |> Maybe.withDefault l
+    in
     chooseFirstIngredient chef
-        |> Random.map
-            (\first ->
-                first
-                    |> Maybe.map List.singleton
-                    |> Maybe.withDefault []
+        |> Random.map (addIngredient [])
+        |> Random.andThen
+            (\l ->
+                l
+                    |> chooseIngredient chef
+                    |> Random.map (addIngredient l)
             )
-        |> Random.andThen (chooseIngredient chef)
-        |> Random.andThen (chooseIngredient chef)
+        |> Random.andThen
+            (\l ->
+                l
+                    |> chooseIngredient chef
+                    |> Random.map (addIngredient l)
+            )
 
 
 chooseFirstIngredient : Chef -> Generator (Maybe Ingredient)
@@ -66,7 +77,7 @@ chooseFirstIngredient chef =
         |> Random.map Tuple.first
 
 
-chooseIngredient : Chef -> List Ingredient -> Generator (List Ingredient)
+chooseIngredient : Chef -> List Ingredient -> Generator (Maybe Ingredient)
 chooseIngredient chef used =
     let
         include =
@@ -102,9 +113,4 @@ chooseIngredient chef used =
                        )
             )
         |> Random.List.choose
-        |> Random.map
-            (\( t, _ ) ->
-                t
-                    |> Maybe.map (\a -> a :: used)
-                    |> Maybe.withDefault used
-            )
+        |> Random.map Tuple.first

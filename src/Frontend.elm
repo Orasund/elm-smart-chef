@@ -137,14 +137,18 @@ updateFromBackend msg model =
             model.shared
     in
     case msg of
-        NewMeal meal ->
+        NewDish meal ingredient ->
             ( { model
-                | shared = { shared | meal = Just meal }
+                | shared =
+                    { shared
+                        | meal = Just meal
+                        , ingredient = Just ingredient
+                    }
               }
             , Cmd.none
             )
 
-        NoOpToFrontend ->
+        NoDishFound ->
             ( model, Cmd.none )
 
 

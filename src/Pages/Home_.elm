@@ -43,7 +43,7 @@ init shared =
 
 type Msg
     = CreateMeal
-    | Noop
+    | UseIngredient Bool
 
 
 update : Shared.Model -> Msg -> Model -> ( Model, Cmd Msg )
@@ -54,9 +54,19 @@ update shared msg model =
             , StartCooking |> sendToBackend
             )
 
-        Noop ->
+        UseIngredient bool ->
             ( model
-            , Cmd.none
+            , shared.ingredient
+                |> Maybe.map
+                    (\i ->
+                        if bool then
+                            Include i
+
+                        else
+                            ChooseIngredient
+                    )
+                |> Maybe.withDefault ChooseIngredient
+                |> sendToBackend
             )
 
 
@@ -98,19 +108,39 @@ view shared model =
                     |> Element.text
           )
             |> Element.el [ Element.centerX, Element.centerY ]
-        , Input.button [ Element.centerX, Element.centerY ]
-            { onPress = Just CreateMeal
-            , label =
-                Element.text
-                    (case shared.meal of
-                        Just _ ->
-                            "Noch ein Gericht"
+            |> List.singleton
+        , case shared.ingredient of
+            Just i ->
+                [ "Hast du "
+                    ++ i.name
+                    ++ " zuhause?"
+                    |> Element.text
+                , Input.button [ Element.centerX, Element.centerY ]
+                    { onPress = Just <| UseIngredient True
+                    , label = Element.text "Ja"
+                    }
+                , Input.button [ Element.centerX, Element.centerY ]
+                    { onPress = Just <| UseIngredient False
+                    , label = Element.text "Nein"
+                    }
+                ]
 
-                        Nothing ->
-                            "Start"
-                    )
-            }
+            Nothing ->
+                Input.button [ Element.centerX, Element.centerY ]
+                    { onPress = Just CreateMeal
+                    , label =
+                        Element.text
+                            (case shared.meal of
+                                Just _ ->
+                                    "Noch ein Gericht"
+
+                                Nothing ->
+                                    "Start"
+                            )
+                    }
+                    |> List.singleton
         ]
+            |> List.concat
             |> Element.column
                 [ Element.centerY
                 , Element.centerX
