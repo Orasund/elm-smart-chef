@@ -55,19 +55,20 @@ update shared msg model =
             )
 
         UseIngredient bool ->
-            ( model
-            , shared.ingredient
+            shared.ingredient
                 |> Maybe.map
                     (\i ->
-                        if bool then
+                        ( model
+                        , (if bool then
                             Include i
 
-                        else
-                            ChooseIngredient
+                           else
+                            Exclude i
+                          )
+                            |> sendToBackend
+                        )
                     )
-                |> Maybe.withDefault ChooseIngredient
-                |> sendToBackend
-            )
+                |> Maybe.withDefault ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

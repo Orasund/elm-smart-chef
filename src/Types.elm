@@ -8,6 +8,8 @@ import Data.Dish as Meal exposing (Dish)
 import Data.Ingredient exposing (Ingredient)
 import Gen.Pages as Pages
 import Random exposing (Seed)
+import Set exposing (Set)
+import Set.Any as AnySet exposing (AnySet)
 import Shared exposing (Flags)
 import Url exposing (Url)
 
@@ -31,6 +33,7 @@ type FrontendMsg
 type alias BackendModel =
     { dish : Dish
     , chef : Chef
+    , avaiableIngredients : Set String
     , seed : Seed
     }
 

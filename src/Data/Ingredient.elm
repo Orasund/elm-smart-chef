@@ -1,7 +1,8 @@
-module Data.Ingredient exposing (Ingredient, list)
+module Data.Ingredient exposing (Ingredient, set)
 
 import Data.Property as Property exposing (Property)
 import Set exposing (Set)
+import Set.Any as AnySet exposing (AnySet)
 
 
 type alias Ingredient =
@@ -17,8 +18,8 @@ new name properties =
     }
 
 
-list : List Ingredient
-list =
+set : AnySet String Ingredient
+set =
     [ new "Erbsen" [ Property.vegetable, Property.beans ]
     , new "Thunfish" [ Property.fish ]
     , new "Linsen" [ Property.beans ]
@@ -30,3 +31,4 @@ list =
     , new "Tomaten" [ Property.vegetable ]
     , new "Salat" [ Property.vegetable ]
     ]
+        |> AnySet.fromList .name

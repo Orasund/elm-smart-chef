@@ -2,13 +2,16 @@ module Backend exposing (..)
 
 import Bridge exposing (ToBackend(..))
 import Data.Chef as Chef
-import Data.Ingredient as Ingredients exposing (Ingredient)
+import Data.Ingredient as Ingredient exposing (Ingredient)
 import Dict
 import Gen.Msg
+import Html exposing (a)
 import Lamdera exposing (ClientId, SessionId)
 import Pages.Home_
 import Random exposing (Generator)
 import Random.List
+import Set
+import Set.Any as AnySet
 import Task
 import Types exposing (BackendModel, BackendMsg(..), ToFrontend(..))
 
@@ -38,6 +41,7 @@ init =
             , exclude = []
             }
       , seed = Random.initialSeed 42
+      , avaiableIngredients = Ingredient.set |> AnySet.toSet
       }
     , Random.independentSeed |> Random.generate NewSeed
     )
@@ -82,20 +86,30 @@ updateFromFrontend sessionId clientId msg model =
 
                 ingredients =
                     ingredient :: dish.ingredients
+
+                avaiableIngredients =
+                    model.avaiableIngredients
+                        |> Set.remove ingredient.name
             in
             { model
                 | dish = { dish | ingredients = ingredients }
+                , avaiableIngredients = avaiableIngredients
             }
                 |> suggestIngredient
-                    (ingredients
+                    (avaiableIngredients
                         |> Chef.chooseIngredient model.chef
                     )
                     clientId
 
-        ChooseIngredient ->
-            model
+        Exclude ingredient ->
+            let
+                avaiableIngredients =
+                    model.avaiableIngredients
+                        |> Set.remove ingredient.name
+            in
+            { model | avaiableIngredients = avaiableIngredients }
                 |> suggestIngredient
-                    (model.dish.ingredients
+                    (avaiableIngredients
                         |> Chef.chooseIngredient model.chef
                     )
                     clientId
@@ -117,9 +131,14 @@ updateFromFrontend sessionId clientId msg model =
                                     (\chef -> { model | chef = chef, dish = dish })
                             )
                         |> (\( m, seed ) ->
-                                { m | seed = seed }
+                                { m
+                                    | seed = seed
+                                    , avaiableIngredients = Ingredient.set |> AnySet.toSet
+                                }
                                     |> suggestIngredient
-                                        (Chef.chooseFirstIngredient m.chef)
+                                        (Ingredient.set
+                                            |> Chef.chooseFirstIngredient m.chef
+                                        )
                                         clientId
                            )
 
