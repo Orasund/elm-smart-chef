@@ -148,6 +148,17 @@ updateFromBackend msg model =
             , Cmd.none
             )
 
+        FinishedDish dish ->
+            ( { model
+                | shared =
+                    { shared
+                        | meal = Just dish
+                        , ingredient = Nothing
+                    }
+              }
+            , Cmd.none
+            )
+
         NoDishFound ->
             ( model, Cmd.none )
 

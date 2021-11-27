@@ -1,5 +1,6 @@
 module Data.Chef exposing (Chef, chooseFirstIngredient, chooseIngredient, list)
 
+import Data.Base as Base exposing (Base)
 import Data.Ingredient as Ingredient exposing (Ingredient)
 import Data.Property as Property exposing (Property)
 import Random exposing (Generator)
@@ -12,6 +13,7 @@ type alias Chef =
     { startWith : Maybe Property
     , include : List Property
     , exclude : List Property
+    , bases : ( Base, List Base )
     }
 
 
@@ -20,18 +22,22 @@ list =
     [ { startWith = Just Property.carb
       , include = [ Property.vegetable ]
       , exclude = []
+      , bases = ( Base.rice, [] )
       }
     , { startWith = Just Property.fish
       , include = [ Property.vegetable ]
       , exclude = []
+      , bases = ( Base.rice, [ Base.wrap ] )
       }
     , { startWith = Just Property.beans
       , include = [ Property.vegetable ]
       , exclude = []
+      , bases = ( Base.rice, [ Base.wrap ] )
       }
     , { startWith = Just Property.vegetable
       , include = [ Property.vegetable ]
       , exclude = []
+      , bases = ( Base.rice, [ Base.wrap ] )
       }
     ]
 

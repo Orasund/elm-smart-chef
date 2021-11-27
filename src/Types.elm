@@ -44,6 +44,7 @@ type BackendMsg
 
 type ToFrontend
     = NewDish Dish Ingredient
+    | FinishedDish Dish
     | NoDishFound
 
 

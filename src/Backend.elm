@@ -1,7 +1,10 @@
 module Backend exposing (..)
 
 import Bridge exposing (ToBackend(..))
+import Config
+import Data.Base as Base
 import Data.Chef as Chef
+import Data.Dish as Dish
 import Data.Ingredient as Ingredient exposing (Ingredient)
 import Dict
 import Gen.Msg
@@ -31,14 +34,12 @@ app =
 
 init : ( Model, Cmd BackendMsg )
 init =
-    ( { dish =
-            { base = "Reis"
-            , ingredients = []
-            }
+    ( { dish = Dish.fromBase Base.rice
       , chef =
             { startWith = Nothing
             , include = []
             , exclude = []
+            , bases = ( Base.rice, [] )
             }
       , seed = Random.initialSeed 42
       , avaiableIngredients = Ingredient.set |> AnySet.toSet
@@ -90,16 +91,30 @@ updateFromFrontend sessionId clientId msg model =
                 avaiableIngredients =
                     model.avaiableIngredients
                         |> Set.remove ingredient.name
+
+                newDish =
+                    { dish | ingredients = ingredients }
+
+                newModel =
+                    { model
+                        | dish = newDish
+                        , avaiableIngredients = avaiableIngredients
+                    }
             in
-            { model
-                | dish = { dish | ingredients = ingredients }
-                , avaiableIngredients = avaiableIngredients
-            }
-                |> suggestIngredient
+            if ingredients |> List.length |> (==) Config.maxIngredients then
+                ( newModel
+                , newDish
+                    |> FinishedDish
+                    |> Lamdera.sendToFrontend clientId
+                )
+
+            else
+                suggestIngredient
                     (avaiableIngredients
                         |> Chef.chooseIngredient model.chef
                     )
                     clientId
+                    newModel
 
         Exclude ingredient ->
             let
@@ -115,20 +130,27 @@ updateFromFrontend sessionId clientId msg model =
                     clientId
 
         StartCooking ->
-            let
-                dish =
-                    { base = "Reis"
-                    , ingredients = []
-                    }
-            in
             case Chef.list of
                 head :: tail ->
                     model.seed
                         |> Random.step
                             (tail
                                 |> Random.uniform head
-                                |> Random.map
-                                    (\chef -> { model | chef = chef, dish = dish })
+                                |> Random.andThen
+                                    (\chef ->
+                                        let
+                                            ( b1, b2 ) =
+                                                chef.bases
+                                        in
+                                        Random.uniform b1 b2
+                                            |> Random.map
+                                                (\base ->
+                                                    { model
+                                                        | chef = chef
+                                                        , dish = Dish.fromBase base
+                                                    }
+                                                )
+                                    )
                             )
                         |> (\( m, seed ) ->
                                 { m
