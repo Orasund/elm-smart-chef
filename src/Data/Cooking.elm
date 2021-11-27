@@ -5,6 +5,7 @@ import Data.Base exposing (Base)
 import Data.Chef as Chef exposing (Chef)
 import Data.Dish exposing (Dish)
 import Data.Ingredient exposing (Ingredient)
+import Dict exposing (Dict)
 import Random exposing (Generator)
 import Set exposing (Set)
 
@@ -13,7 +14,7 @@ type alias CookingState =
     { base : Base
     , ingredients : List Ingredient
     , chef : Chef
-    , avaiableIngredients : Set String
+    , avaiableIngredients : Dict String Ingredient
     }
 
 
@@ -29,7 +30,7 @@ toDish state =
     }
 
 
-start : Set String -> Chef -> Generator CookingState
+start : Dict String Ingredient -> Chef -> Generator CookingState
 start avaiableIngredients chef =
     let
         ( b1, b2 ) =
@@ -65,7 +66,7 @@ includeIngredient ingredient state =
 
         avaiableIngredients =
             state.avaiableIngredients
-                |> Set.remove ingredient.name
+                |> Dict.remove ingredient.name
 
         newModel =
             { state
@@ -84,6 +85,6 @@ excludeIngredient ingredient state =
     let
         avaiableIngredients =
             state.avaiableIngredients
-                |> Set.remove ingredient.name
+                |> Dict.remove ingredient.name
     in
     { state | avaiableIngredients = avaiableIngredients }

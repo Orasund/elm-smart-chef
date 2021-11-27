@@ -12,7 +12,8 @@ maxIngredients =
 palette : Palette
 palette =
     { defaultPalette
-        | primary = Color.rgb255 36 25 9
+        | primary = Color.rgb255 63 97 45
+        , background = Color.rgb255 161 192 132
     }
 
 

@@ -5,7 +5,9 @@ import Browser
 import Browser.Dom
 import Browser.Navigation as Nav exposing (Key)
 import Color
+import Config
 import Data.Cooking as Cooking exposing (Cooking(..))
+import Dict
 import Effect
 import Element
 import Element.Background as Background
@@ -143,6 +145,17 @@ updateFromBackend msg model =
             model.shared
     in
     case msg of
+        GotIngredientList avaiableIngredients ->
+            ( { model
+                | shared =
+                    { shared
+                        | ingredientList =
+                            avaiableIngredients
+                    }
+              }
+            , Cmd.none
+            )
+
         NewChef chef avaiableIngredients ->
             let
                 ( ( cooking, maybeIngredient ), seed ) =
@@ -165,10 +178,6 @@ updateFromBackend msg model =
                             { shared
                                 | cooking = Just (Prepairing cooking)
                                 , ingredient = Just ingredient
-                                , ingredientList =
-                                    avaiableIngredients
-                                        |> Set.toList
-                                        |> List.sort
                                 , seed = seed
                             }
                       }
@@ -216,7 +225,7 @@ view model =
                             }
                             [ Element.width Element.fill
                             , Element.height Element.fill
-                            , Color.rgb255 203 191 122
+                            , Config.palette.background
                                 |> Color.toRgba
                                 |> Element.fromRgb
                                 |> Background.color

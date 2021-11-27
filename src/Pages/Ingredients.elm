@@ -6,6 +6,7 @@ import Config
 import Data.Cooking exposing (Cooking(..))
 import Data.Dish exposing (Dish)
 import Data.Ingredient as Ingredient exposing (Ingredient)
+import Dict exposing (Dict)
 import Effect exposing (Effect)
 import Element exposing (Element)
 import Element.Font as Font
@@ -18,6 +19,7 @@ import Shared exposing (Msg(..))
 import View exposing (View)
 import View.Navigation as Navigation
 import Widget
+import Widget.Customize as Customize
 import Widget.Material as Material
 import Widget.Material.Typography as Typography
 
@@ -52,8 +54,7 @@ init shared =
 
 
 type Msg
-    = CreateMeal
-    | UseIngredient Bool
+    = ToBackend ToBackend
     | Navigate Route
 
 
@@ -65,22 +66,11 @@ update request shared msg model =
             , Route.toHref route |> Nav.pushUrl request.key |> Effect.fromCmd
             )
 
-        CreateMeal ->
+        ToBackend toBackendMsg ->
             ( model
-            , StartCooking
+            , toBackendMsg
                 |> sendToBackend
                 |> Effect.fromCmd
-            )
-
-        UseIngredient bool ->
-            ( model
-            , (if bool then
-                IncludeIngredient
-
-               else
-                ExcludeIngredient
-              )
-                |> Effect.fromShared
             )
 
 
@@ -93,80 +83,34 @@ subscriptions _ =
 -- VIEW
 
 
-viewFinal : Dish -> List (Element Msg)
-viewFinal meal =
-    [ Widget.button (Material.containedButton Config.palette)
-        { text = "Noch ein Gericht"
-        , icon = always Element.none
-        , onPress = Just CreateMeal
-        }
-        |> Element.el [ Element.alignTop, Element.centerX ]
-        |> List.singleton
-    , meal.base
-        ++ (case meal.ingredients of
-                [] ->
-                    ""
-
-                [ a ] ->
-                    " mit " ++ a.name
-
-                head :: tail ->
-                    " mit "
-                        ++ (tail
-                                |> List.map .name
-                                |> String.join ", "
-                           )
-                        ++ " und "
-                        ++ head.name
-           )
-        |> Element.text
-        |> Element.el [ Element.centerX, Element.centerY ]
-        |> List.singleton
-    , Element.el [] Element.none
-        |> List.singleton
-    ]
-        |> List.concat
-
-
-viewIngredientPicker : Ingredient -> List (Element Msg)
-viewIngredientPicker ingredient =
-    [ "Hast du "
-        ++ ingredient.name
-        ++ " zuhause?"
-        |> Element.text
-        |> Element.el [ Element.centerX, Element.alignTop ]
-    , Element.el [] Element.none
-    , [ Widget.button (Material.containedButton Config.palette)
-            { onPress = Just <| UseIngredient False
-            , icon = always Element.none
-            , text = "Nein"
-            }
-      , Widget.button (Material.containedButton Config.palette)
-            { onPress = Just <| UseIngredient True
-            , icon = always Element.none
-            , text = "Ja"
-            }
-      ]
-        |> Element.row
-            [ Element.centerX
-            , Element.alignBottom
-            , Element.spacing 16
-            ]
-    ]
-
-
-viewList : (Element Msg -> Element Msg) -> List String -> List (Element Msg)
-viewList navigation list =
-    [ list
+viewList : (Element Msg -> Element Msg) -> Dict String Ingredient -> List (Element Msg)
+viewList navigation dict =
+    [ dict
+        |> Dict.values
         |> List.map
-            (\text ->
+            (\ingredient ->
                 Widget.fullBleedItem (Material.fullBleedItem Config.palette)
-                    { text = text
+                    { text = ingredient.name
                     , onPress = Nothing
-                    , icon = always Element.none
+                    , icon =
+                        always
+                            (Widget.textButton (Material.textButton Config.palette)
+                                { text = "Entfernen"
+                                , onPress =
+                                    ingredient.name
+                                        |> RemoveIngredient
+                                        |> ToBackend
+                                        |> Just
+                                }
+                                |> Element.el [ Element.centerY ]
+                            )
                     }
             )
-        |> Widget.itemList Material.column
+        |> Widget.itemList
+            (Material.column
+                |> Customize.elementColumn [ Element.width Element.fill ]
+                |> Customize.mapContent (Customize.element [ Element.width Element.fill ])
+            )
         |> Element.el
             [ Element.scrollbarY
             , Element.height Element.fill

@@ -43,7 +43,9 @@ type alias Model =
 init : Shared.Model -> ( Model, Effect Msg )
 init shared =
     ( ()
-    , Effect.none
+    , SyncIngredients
+        |> sendToBackend
+        |> Effect.fromCmd
     )
 
 
@@ -135,8 +137,7 @@ viewIngredientPicker navigation ingredient =
         ++ ingredient.name
         ++ " zuhause?"
         |> Element.text
-        |> Element.el [ Element.centerX, Element.alignTop ]
-    , Element.el [] Element.none
+        |> Element.el [ Element.centerX, Element.centerY ]
     , [ Widget.button (Material.textButton Config.palette)
             { onPress = Just <| UseIngredient False
             , icon = always Element.none
@@ -158,18 +159,7 @@ viewIngredientPicker navigation ingredient =
 
 viewStart : (Element Msg -> Element Msg) -> List (Element Msg)
 viewStart navigation =
-    [ "Quick Chef"
-        |> Element.text
-        |> List.singleton
-        |> Element.paragraph Typography.h1
-        |> Element.el
-            [ Element.centerX
-            , Element.alignTop
-            , Font.family [ Font.serif ]
-            , Font.center
-            ]
-        |> List.singleton
-    , ("Hunger?"
+    [ ("Hunger?"
         |> Element.text
       )
         |> Element.el [ Element.centerX, Element.centerY ]
@@ -193,15 +183,27 @@ view request shared model =
     in
     { title = Config.title
     , body =
-        (case ( shared.cooking, shared.ingredient ) of
-            ( Just (Done dish), _ ) ->
-                viewFinal navigation dish
+        (("Quick Chef"
+            |> Element.text
+            |> List.singleton
+            |> Element.paragraph Typography.h1
+            |> Element.el
+                [ Element.centerX
+                , Element.alignTop
+                , Font.family [ Font.serif ]
+                , Font.center
+                ]
+         )
+            :: (case ( shared.cooking, shared.ingredient ) of
+                    ( Just (Done dish), _ ) ->
+                        viewFinal navigation dish
 
-            ( _, Just ingredient ) ->
-                viewIngredientPicker navigation ingredient
+                    ( _, Just ingredient ) ->
+                        viewIngredientPicker navigation ingredient
 
-            ( _, _ ) ->
-                viewStart navigation
+                    ( _, _ ) ->
+                        viewStart navigation
+               )
         )
             |> Element.column
                 [ Element.centerY

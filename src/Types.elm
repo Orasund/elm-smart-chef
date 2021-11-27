@@ -6,6 +6,8 @@ import Browser.Navigation exposing (Key)
 import Data.Chef exposing (Chef)
 import Data.Dish as Meal exposing (Dish)
 import Data.Ingredient exposing (Ingredient)
+import Dict exposing (Dict)
+import Gen.Model exposing (Model(..))
 import Gen.Pages as Pages
 import Random exposing (Seed)
 import Set exposing (Set)
@@ -32,7 +34,7 @@ type FrontendMsg
 
 type alias BackendModel =
     { chef : Chef
-    , avaiableIngredients : Set String
+    , avaiableIngredients : Dict String Ingredient
     , seed : Seed
     }
 
@@ -42,7 +44,8 @@ type BackendMsg
 
 
 type ToFrontend
-    = NewChef Chef (Set String)
+    = NewChef Chef (Dict String Ingredient)
+    | GotIngredientList (Dict String Ingredient)
     | NoDishFound
 
 

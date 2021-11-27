@@ -14,6 +14,7 @@ import Data.Chef as Chef exposing (Chef)
 import Data.Cooking as Cooking exposing (Cooking(..), CookingState)
 import Data.Dish as Meal exposing (Dish)
 import Data.Ingredient exposing (Ingredient)
+import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Region as Region
 import Random exposing (Seed)
@@ -32,7 +33,7 @@ type alias Flags =
 
 type alias Model =
     { ingredient : Maybe Ingredient
-    , ingredientList : List String
+    , ingredientList : Dict String Ingredient
     , cooking : Maybe Cooking
     , seed : Seed
     }
@@ -41,7 +42,7 @@ type alias Model =
 init : Request -> Flags -> ( Model, Cmd Msg )
 init _ json =
     ( { ingredient = Nothing
-      , ingredientList = []
+      , ingredientList = Dict.empty
       , cooking = Nothing
       , seed = Random.initialSeed 42
       }

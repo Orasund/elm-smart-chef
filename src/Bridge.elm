@@ -10,3 +10,5 @@ sendToBackend =
 
 type ToBackend
     = StartCooking
+    | SyncIngredients
+    | RemoveIngredient String

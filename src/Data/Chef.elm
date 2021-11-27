@@ -3,10 +3,10 @@ module Data.Chef exposing (Chef, chooseFirstIngredient, chooseIngredient, list)
 import Data.Base as Base exposing (Base)
 import Data.Ingredient as Ingredient exposing (Ingredient)
 import Data.Property as Property exposing (Property)
+import Dict exposing (Dict)
 import Random exposing (Generator)
 import Random.List
 import Set exposing (Set)
-import Set.Any as AnySet exposing (AnySet)
 
 
 type alias Chef =
@@ -47,36 +47,27 @@ list =
     ]
 
 
-chooseFirstIngredient : Chef -> Set String -> Generator (Maybe Ingredient)
-chooseFirstIngredient chef avaiableIngredientsList =
-    let
-        avaiableIngredients =
-            Ingredient.set
-                |> AnySet.filter (\{ name } -> avaiableIngredientsList |> Set.member name)
-    in
+chooseFirstIngredient : Chef -> Dict String Ingredient -> Generator (Maybe Ingredient)
+chooseFirstIngredient chef avaiableIngredients =
     case chef.startWith of
         Just property ->
             avaiableIngredients
-                |> AnySet.filter
-                    (\ingredient ->
+                |> Dict.filter
+                    (\_ ingredient ->
                         ingredient.properties
                             |> Set.member property.name
                     )
-                |> AnySet.toList
+                |> Dict.values
                 |> Random.List.choose
                 |> Random.map Tuple.first
 
         Nothing ->
-            chooseIngredient chef avaiableIngredientsList
+            chooseIngredient chef avaiableIngredients
 
 
-chooseIngredient : Chef -> Set String -> Generator (Maybe Ingredient)
-chooseIngredient chef avaiableIngredientsList =
+chooseIngredient : Chef -> Dict String Ingredient -> Generator (Maybe Ingredient)
+chooseIngredient chef avaiableIngredients =
     let
-        avaiableIngredients =
-            Ingredient.set
-                |> AnySet.filter (\{ name } -> avaiableIngredientsList |> Set.member name)
-
         include =
             chef.include |> List.map .name |> Set.fromList
 
@@ -84,9 +75,8 @@ chooseIngredient chef avaiableIngredientsList =
             chef.exclude |> List.map .name |> Set.fromList
     in
     avaiableIngredients
-        |> AnySet.filter (\i -> avaiableIngredients |> AnySet.member i)
-        |> AnySet.filter
-            (\ingredient ->
+        |> Dict.filter
+            (\_ ingredient ->
                 ingredient.properties
                     |> Set.toList
                     |> (\l ->
@@ -106,6 +96,6 @@ chooseIngredient chef avaiableIngredientsList =
                                    )
                        )
             )
-        |> AnySet.toList
+        |> Dict.values
         |> Random.List.choose
         |> Random.map Tuple.first
