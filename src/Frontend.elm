@@ -3,8 +3,10 @@ module Frontend exposing (..)
 import Browser
 import Browser.Dom
 import Browser.Navigation as Nav exposing (Key)
+import Color
 import Effect
 import Element
+import Element.Background as Background
 import Gen.Model
 import Gen.Pages as Pages
 import Gen.Route as Route
@@ -176,7 +178,30 @@ view model =
             }
         |> (\{ title, body } ->
                 { title = title
-                , body = [ Element.layout [] body ]
+                , body =
+                    [ body
+                        |> Element.el
+                            [ Element.centerX
+                            , Element.centerY
+                            , Element.spacing 16
+                            ]
+                        |> Element.layoutWith
+                            { options =
+                                [ Element.focusStyle
+                                    { borderColor = Nothing
+                                    , backgroundColor = Nothing
+                                    , shadow = Nothing
+                                    }
+                                ]
+                            }
+                            [ Element.width Element.fill
+                            , Element.height Element.fill
+                            , Color.rgb255 203 191 122
+                                |> Color.toRgba
+                                |> Element.fromRgb
+                                |> Background.color
+                            ]
+                    ]
                 }
            )
 

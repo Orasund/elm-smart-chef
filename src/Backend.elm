@@ -66,13 +66,13 @@ suggestIngredient randIngredient clientId model =
       }
     , case maybeIngredient of
         Just ingredient ->
-            NewDish
-                model.dish
-                ingredient
+            ingredient
+                |> NewDish model.dish
                 |> Lamdera.sendToFrontend clientId
 
         Nothing ->
-            NoDishFound
+            model.dish
+                |> FinishedDish
                 |> Lamdera.sendToFrontend clientId
     )
 

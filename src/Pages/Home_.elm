@@ -1,15 +1,19 @@
 module Pages.Home_ exposing (Model, Msg(..), page)
 
 import Bridge exposing (..)
+import Config
 import Data.Dish exposing (Dish)
+import Data.Ingredient as Ingredient exposing (Ingredient)
 import Effect exposing (Effect)
-import Element
+import Element exposing (Element)
 import Element.Input as Input
 import Lamdera
 import Page
 import Request exposing (Request)
 import Shared
 import View exposing (View)
+import Widget
+import Widget.Material as Material
 
 
 page : Shared.Model -> Request -> Page.With Model Msg
@@ -80,75 +84,112 @@ subscriptions _ =
 -- VIEW
 
 
+viewFinal : Dish -> List (Element Msg)
+viewFinal meal =
+    [ Widget.button (Material.containedButton Config.palette)
+        { text = "Noch ein Gericht"
+        , icon = always Element.none
+        , onPress = Just CreateMeal
+        }
+        |> Element.el [ Element.alignTop, Element.centerX ]
+        |> List.singleton
+    , meal.base
+        ++ (case meal.ingredients of
+                [] ->
+                    ""
+
+                [ a ] ->
+                    " mit " ++ a.name
+
+                head :: tail ->
+                    " mit "
+                        ++ (tail
+                                |> List.map .name
+                                |> String.join ", "
+                           )
+                        ++ " und "
+                        ++ head.name
+           )
+        |> Element.text
+        |> Element.el [ Element.centerX, Element.centerY ]
+        |> List.singleton
+    , Element.el [] Element.none
+        |> List.singleton
+    ]
+        |> List.concat
+
+
+viewIngredientPicker : Ingredient -> List (Element Msg)
+viewIngredientPicker ingredient =
+    [ "Hast du "
+        ++ ingredient.name
+        ++ " zuhause?"
+        |> Element.text
+        |> Element.el [ Element.centerX, Element.alignTop ]
+    , Element.el [] Element.none
+    , [ Widget.button (Material.containedButton Config.palette)
+            { onPress = Just <| UseIngredient False
+            , icon = always Element.none
+            , text = "Nein"
+            }
+      , Widget.button (Material.containedButton Config.palette)
+            { onPress = Just <| UseIngredient True
+            , icon = always Element.none
+            , text = "Ja"
+            }
+      ]
+        |> Element.row
+            [ Element.centerX
+            , Element.alignBottom
+            , Element.spacing 16
+            ]
+    ]
+
+
+viewStart : List (Element Msg)
+viewStart =
+    [ Element.none
+        |> Element.el []
+        |> List.singleton
+    , ("Hunger?"
+        |> Element.text
+      )
+        |> Element.el [ Element.centerX, Element.centerY ]
+        |> List.singleton
+    , Widget.button (Material.containedButton Config.palette)
+        { text = "Start"
+        , icon = always Element.none
+        , onPress = Just CreateMeal
+        }
+        |> Element.el [ Element.centerX ]
+        |> List.singleton
+    ]
+        |> List.concat
+
+
 view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = ""
     , body =
-        [ (case shared.meal of
-            Nothing ->
-                "Hunger?" |> Element.text
+        (case ( shared.meal, shared.ingredient ) of
+            ( Nothing, _ ) ->
+                viewStart
 
-            Just meal ->
-                meal.base
-                    ++ " mit "
-                    ++ (case meal.ingredients of
-                            [] ->
-                                "Sauce"
+            ( Just meal, Just ingredient ) ->
+                viewIngredientPicker ingredient
 
-                            [ a ] ->
-                                a.name
-
-                            head :: tail ->
-                                (tail
-                                    |> List.map .name
-                                    |> String.join ", "
-                                )
-                                    ++ " und "
-                                    ++ head.name
-                       )
-                    |> Element.text
-          )
-            |> Element.el [ Element.centerX, Element.centerY ]
-            |> List.singleton
-        , case shared.ingredient of
-            Just i ->
-                [ "Hast du "
-                    ++ i.name
-                    ++ " zuhause?"
-                    |> Element.text
-                , Input.button [ Element.centerX, Element.centerY ]
-                    { onPress = Just <| UseIngredient True
-                    , label = Element.text "Ja"
-                    }
-                , Input.button [ Element.centerX, Element.centerY ]
-                    { onPress = Just <| UseIngredient False
-                    , label = Element.text "Nein"
-                    }
-                ]
-
-            Nothing ->
-                Input.button [ Element.centerX, Element.centerY ]
-                    { onPress = Just CreateMeal
-                    , label =
-                        Element.text
-                            (case shared.meal of
-                                Just _ ->
-                                    "Noch ein Gericht"
-
-                                Nothing ->
-                                    "Start"
-                            )
-                    }
-                    |> List.singleton
-        ]
-            |> List.concat
+            ( Just meal, Nothing ) ->
+                viewFinal meal
+        )
             |> Element.column
                 [ Element.centerY
                 , Element.centerX
-                , Element.spacing 10
+                , Element.spaceEvenly
+                , Element.height <| Element.fill
+                , Element.width <| Element.fill
                 ]
             |> Element.el
-                [ Element.height <| Element.fill
-                , Element.width <| Element.fill
+                [ Element.width <| Element.px 400
+                , Element.height <| Element.px 600
                 ]
     }
