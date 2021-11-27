@@ -2,6 +2,7 @@ module Pages.Home_ exposing (Model, Msg(..), page)
 
 import Bridge exposing (..)
 import Config
+import Data.Cooking exposing (Cooking(..))
 import Data.Dish exposing (Dish)
 import Data.Ingredient as Ingredient exposing (Ingredient)
 import Effect exposing (Effect)
@@ -11,7 +12,7 @@ import Element.Input as Input
 import Lamdera
 import Page
 import Request exposing (Request)
-import Shared
+import Shared exposing (Msg(..))
 import View exposing (View)
 import Widget
 import Widget.Material as Material
@@ -20,7 +21,7 @@ import Widget.Material.Typography as Typography
 
 page : Shared.Model -> Request -> Page.With Model Msg
 page shared _ =
-    Page.element
+    Page.advanced
         { init = init shared
         , update = update shared
         , subscriptions = subscriptions
@@ -36,10 +37,10 @@ type alias Model =
     ()
 
 
-init : Shared.Model -> ( Model, Cmd Msg )
+init : Shared.Model -> ( Model, Effect Msg )
 init shared =
     ( ()
-    , Cmd.none
+    , Effect.none
     )
 
 
@@ -52,29 +53,26 @@ type Msg
     | UseIngredient Bool
 
 
-update : Shared.Model -> Msg -> Model -> ( Model, Cmd Msg )
+update : Shared.Model -> Msg -> Model -> ( Model, Effect Msg )
 update shared msg model =
     case msg of
         CreateMeal ->
             ( model
-            , StartCooking |> sendToBackend
+            , StartCooking
+                |> sendToBackend
+                |> Effect.fromCmd
             )
 
         UseIngredient bool ->
-            shared.ingredient
-                |> Maybe.map
-                    (\i ->
-                        ( model
-                        , (if bool then
-                            Include i
+            ( model
+            , (if bool then
+                IncludeIngredient
 
-                           else
-                            Exclude i
-                          )
-                            |> sendToBackend
-                        )
-                    )
-                |> Maybe.withDefault ( model, Cmd.none )
+               else
+                ExcludeIngredient
+              )
+                |> Effect.fromShared
+            )
 
 
 subscriptions : Model -> Sub Msg
@@ -181,15 +179,15 @@ view : Shared.Model -> Model -> View Msg
 view shared model =
     { title = ""
     , body =
-        (case ( shared.meal, shared.ingredient ) of
-            ( Nothing, _ ) ->
-                viewStart
+        (case ( shared.cooking, shared.ingredient ) of
+            ( Just (Done dish), _ ) ->
+                viewFinal dish
 
-            ( Just meal, Just ingredient ) ->
+            ( _, Just ingredient ) ->
                 viewIngredientPicker ingredient
 
-            ( Just meal, Nothing ) ->
-                viewFinal meal
+            ( _, _ ) ->
+                viewStart
         )
             |> Element.column
                 [ Element.centerY

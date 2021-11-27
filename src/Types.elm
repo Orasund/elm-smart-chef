@@ -31,8 +31,7 @@ type FrontendMsg
 
 
 type alias BackendModel =
-    { dish : Dish
-    , chef : Chef
+    { chef : Chef
     , avaiableIngredients : Set String
     , seed : Seed
     }
@@ -43,8 +42,7 @@ type BackendMsg
 
 
 type ToFrontend
-    = NewDish Dish Ingredient
-    | FinishedDish Dish
+    = NewChef Chef (Set String)
     | NoDishFound
 
 

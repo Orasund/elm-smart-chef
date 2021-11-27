@@ -34,8 +34,7 @@ app =
 
 init : ( Model, Cmd BackendMsg )
 init =
-    ( { dish = Dish.fromBase Base.rice
-      , chef =
+    ( { chef =
             { startWith = Nothing
             , include = []
             , exclude = []
@@ -55,114 +54,24 @@ update msg model =
             ( { model | seed = seed }, Cmd.none )
 
 
-suggestIngredient : Generator (Maybe Ingredient) -> ClientId -> Model -> ( Model, Cmd BackendMsg )
-suggestIngredient randIngredient clientId model =
-    let
-        ( maybeIngredient, seed ) =
-            Random.step randIngredient model.seed
-    in
-    ( { model
-        | seed = seed
-      }
-    , case maybeIngredient of
-        Just ingredient ->
-            ingredient
-                |> NewDish model.dish
-                |> Lamdera.sendToFrontend clientId
-
-        Nothing ->
-            model.dish
-                |> FinishedDish
-                |> Lamdera.sendToFrontend clientId
-    )
-
-
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
-        Include ingredient ->
-            let
-                dish =
-                    model.dish
-
-                ingredients =
-                    ingredient :: dish.ingredients
-
-                avaiableIngredients =
-                    model.avaiableIngredients
-                        |> Set.remove ingredient.name
-
-                newDish =
-                    { dish | ingredients = ingredients }
-
-                newModel =
-                    { model
-                        | dish = newDish
-                        , avaiableIngredients = avaiableIngredients
-                    }
-            in
-            if ingredients |> List.length |> (==) Config.maxIngredients then
-                ( newModel
-                , newDish
-                    |> FinishedDish
-                    |> Lamdera.sendToFrontend clientId
-                )
-
-            else
-                suggestIngredient
-                    (avaiableIngredients
-                        |> Chef.chooseIngredient model.chef
-                    )
-                    clientId
-                    newModel
-
-        Exclude ingredient ->
-            let
-                avaiableIngredients =
-                    model.avaiableIngredients
-                        |> Set.remove ingredient.name
-            in
-            { model | avaiableIngredients = avaiableIngredients }
-                |> suggestIngredient
-                    (avaiableIngredients
-                        |> Chef.chooseIngredient model.chef
-                    )
-                    clientId
-
         StartCooking ->
             case Chef.list of
                 head :: tail ->
-                    model.seed
-                        |> Random.step
-                            (tail
-                                |> Random.uniform head
-                                |> Random.andThen
-                                    (\chef ->
-                                        let
-                                            ( b1, b2 ) =
-                                                chef.bases
-                                        in
-                                        Random.uniform b1 b2
-                                            |> Random.map
-                                                (\base ->
-                                                    { model
-                                                        | chef = chef
-                                                        , dish = Dish.fromBase base
-                                                    }
-                                                )
+                    let
+                        ( chef, seed ) =
+                            model.seed
+                                |> Random.step
+                                    (tail
+                                        |> Random.uniform head
                                     )
-                            )
-                        |> (\( m, seed ) ->
-                                { m
-                                    | seed = seed
-                                    , avaiableIngredients = Ingredient.set |> AnySet.toSet
-                                }
-                                    |> suggestIngredient
-                                        (Ingredient.set
-                                            |> Chef.chooseFirstIngredient m.chef
-                                        )
-                                        clientId
-                           )
+                    in
+                    ( { model | seed = seed }
+                    , NewChef chef (Ingredient.set |> AnySet.toSet)
+                        |> Lamdera.sendToFrontend clientId
+                    )
 
                 [] ->
                     ( model

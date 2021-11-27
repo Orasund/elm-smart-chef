@@ -1,9 +1,11 @@
 module Frontend exposing (..)
 
+import Bridge exposing (ToBackend(..))
 import Browser
 import Browser.Dom
 import Browser.Navigation as Nav exposing (Key)
 import Color
+import Data.Cooking as Cooking exposing (Cooking(..))
 import Effect
 import Element
 import Element.Background as Background
@@ -11,6 +13,7 @@ import Gen.Model
 import Gen.Pages as Pages
 import Gen.Route as Route
 import Lamdera
+import Random
 import Request
 import Shared
 import Task
@@ -139,27 +142,39 @@ updateFromBackend msg model =
             model.shared
     in
     case msg of
-        NewDish meal ingredient ->
-            ( { model
-                | shared =
-                    { shared
-                        | meal = Just meal
-                        , ingredient = Just ingredient
-                    }
-              }
-            , Cmd.none
-            )
+        NewChef chef avaiableIngredients ->
+            let
+                ( ( cooking, maybeIngredient ), seed ) =
+                    model.shared.seed
+                        |> Random.step
+                            (chef
+                                |> Cooking.start avaiableIngredients
+                                |> Random.andThen
+                                    (\c ->
+                                        c
+                                            |> Cooking.chooseIngredient
+                                            |> Random.map (\i -> ( c, i ))
+                                    )
+                            )
+            in
+            case maybeIngredient of
+                Just ingredient ->
+                    ( { model
+                        | shared =
+                            { shared
+                                | cooking = Just (Prepairing cooking)
+                                , ingredient = Just ingredient
+                                , seed = seed
+                            }
+                      }
+                    , Cmd.none
+                    )
 
-        FinishedDish dish ->
-            ( { model
-                | shared =
-                    { shared
-                        | meal = Just dish
-                        , ingredient = Nothing
-                    }
-              }
-            , Cmd.none
-            )
+                Nothing ->
+                    ( model
+                    , StartCooking
+                        |> Lamdera.sendToBackend
+                    )
 
         NoDishFound ->
             ( model, Cmd.none )

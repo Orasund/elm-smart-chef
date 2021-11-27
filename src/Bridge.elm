@@ -10,5 +10,3 @@ sendToBackend =
 
 type ToBackend
     = StartCooking
-    | Include Ingredient
-    | Exclude Ingredient

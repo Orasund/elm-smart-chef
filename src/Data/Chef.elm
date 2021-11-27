@@ -42,8 +42,13 @@ list =
     ]
 
 
-chooseFirstIngredient : Chef -> AnySet String Ingredient -> Generator (Maybe Ingredient)
-chooseFirstIngredient chef avaiableIngredients =
+chooseFirstIngredient : Chef -> Set String -> Generator (Maybe Ingredient)
+chooseFirstIngredient chef avaiableIngredientsList =
+    let
+        avaiableIngredients =
+            Ingredient.set
+                |> AnySet.filter (\{ name } -> avaiableIngredientsList |> Set.member name)
+    in
     avaiableIngredients
         |> (case chef.startWith of
                 Just property ->

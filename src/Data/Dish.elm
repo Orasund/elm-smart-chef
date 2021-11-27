@@ -1,4 +1,4 @@
-module Data.Dish exposing (Dish, fromBase)
+module Data.Dish exposing (Dish)
 
 import Data.Base as Base exposing (Base)
 import Data.Ingredient exposing (Ingredient)
@@ -7,11 +7,4 @@ import Data.Ingredient exposing (Ingredient)
 type alias Dish =
     { base : String
     , ingredients : List Ingredient
-    }
-
-
-fromBase : Base -> Dish
-fromBase base =
-    { base = base.name
-    , ingredients = []
     }
