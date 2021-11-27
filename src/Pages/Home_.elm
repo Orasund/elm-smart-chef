@@ -6,6 +6,7 @@ import Data.Dish exposing (Dish)
 import Data.Ingredient as Ingredient exposing (Ingredient)
 import Effect exposing (Effect)
 import Element exposing (Element)
+import Element.Font as Font
 import Element.Input as Input
 import Lamdera
 import Page
@@ -14,6 +15,7 @@ import Shared
 import View exposing (View)
 import Widget
 import Widget.Material as Material
+import Widget.Material.Typography as Typography
 
 
 page : Shared.Model -> Request -> Page.With Model Msg
@@ -148,8 +150,16 @@ viewIngredientPicker ingredient =
 
 viewStart : List (Element Msg)
 viewStart =
-    [ Element.none
-        |> Element.el []
+    [ "Quick Chef"
+        |> Element.text
+        |> List.singleton
+        |> Element.paragraph Typography.h1
+        |> Element.el
+            [ Element.centerX
+            , Element.alignTop
+            , Font.family [ Font.serif ]
+            , Font.center
+            ]
         |> List.singleton
     , ("Hunger?"
         |> Element.text

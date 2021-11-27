@@ -183,7 +183,7 @@ view model =
                         |> Element.el
                             [ Element.centerX
                             , Element.centerY
-                            , Element.spacing 16
+                            , Element.padding 32
                             ]
                         |> Element.layoutWith
                             { options =
