@@ -15,6 +15,7 @@ import Gen.Route as Route
 import Lamdera
 import Random
 import Request
+import Set
 import Shared
 import Task
 import Types exposing (FrontendModel, FrontendMsg(..), ToFrontend(..))
@@ -164,6 +165,10 @@ updateFromBackend msg model =
                             { shared
                                 | cooking = Just (Prepairing cooking)
                                 , ingredient = Just ingredient
+                                , ingredientList =
+                                    avaiableIngredients
+                                        |> Set.toList
+                                        |> List.sort
                                 , seed = seed
                             }
                       }

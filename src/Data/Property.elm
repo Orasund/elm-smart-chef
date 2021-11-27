@@ -1,4 +1,4 @@
-module Data.Property exposing (Property, beans, carb, fish, vegetable)
+module Data.Property exposing (Property, beans, carb, fish, sauce, vegetable)
 
 
 type alias Property =
@@ -23,3 +23,8 @@ carb =
 beans : Property
 beans =
     { name = "beans" }
+
+
+sauce : Property
+sauce =
+    { name = "sauce" }

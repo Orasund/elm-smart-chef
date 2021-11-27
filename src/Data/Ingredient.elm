@@ -30,5 +30,9 @@ set =
     , new "Pilze" [ Property.carb ]
     , new "Tomaten" [ Property.vegetable ]
     , new "Salat" [ Property.vegetable ]
+    , new "Feta" [ Property.sauce ]
+    , new "Pesto" [ Property.sauce ]
+    , new "Sauerrahm" [ Property.sauce ]
+    , new "Tofu" [ Property.carb ]
     ]
         |> AnySet.fromList .name

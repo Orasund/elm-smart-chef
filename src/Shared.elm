@@ -32,6 +32,7 @@ type alias Flags =
 
 type alias Model =
     { ingredient : Maybe Ingredient
+    , ingredientList : List String
     , cooking : Maybe Cooking
     , seed : Seed
     }
@@ -40,6 +41,7 @@ type alias Model =
 init : Request -> Flags -> ( Model, Cmd Msg )
 init _ json =
     ( { ingredient = Nothing
+      , ingredientList = []
       , cooking = Nothing
       , seed = Random.initialSeed 42
       }

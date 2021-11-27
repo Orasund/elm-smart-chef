@@ -4,12 +4,14 @@ import Browser.Navigation exposing (Key)
 import Effect exposing (Effect)
 import ElmSpa.Page
 import Gen.Params.Home_
+import Gen.Params.Ingredients
 import Gen.Params.NotFound
 import Gen.Model as Model
 import Gen.Msg as Msg
 import Gen.Route as Route exposing (Route)
 import Page exposing (Page)
 import Pages.Home_
+import Pages.Ingredients
 import Pages.NotFound
 import Request exposing (Request)
 import Shared
@@ -32,6 +34,9 @@ init route =
         Route.Home_ ->
             pages.home_.init ()
     
+        Route.Ingredients ->
+            pages.ingredients.init ()
+    
         Route.NotFound ->
             pages.notFound.init ()
 
@@ -41,6 +46,9 @@ update msg_ model_ =
     case ( msg_, model_ ) of
         ( Msg.Home_ msg, Model.Home_ params model ) ->
             pages.home_.update params msg model
+    
+        ( Msg.Ingredients msg, Model.Ingredients params model ) ->
+            pages.ingredients.update params msg model
 
         _ ->
             \_ _ _ -> ( model_, Effect.none )
@@ -55,6 +63,9 @@ view model_ =
         Model.Home_ params model ->
             pages.home_.view params model
     
+        Model.Ingredients params model ->
+            pages.ingredients.view params model
+    
         Model.NotFound params ->
             pages.notFound.view params ()
 
@@ -68,6 +79,9 @@ subscriptions model_ =
         Model.Home_ params model ->
             pages.home_.subscriptions params model
     
+        Model.Ingredients params model ->
+            pages.ingredients.subscriptions params model
+    
         Model.NotFound params ->
             pages.notFound.subscriptions params ()
 
@@ -78,10 +92,12 @@ subscriptions model_ =
 
 pages :
     { home_ : Bundle Gen.Params.Home_.Params Pages.Home_.Model Pages.Home_.Msg
+    , ingredients : Bundle Gen.Params.Ingredients.Params Pages.Ingredients.Model Pages.Ingredients.Msg
     , notFound : Static Gen.Params.NotFound.Params
     }
 pages =
     { home_ = bundle Pages.Home_.page Model.Home_ Msg.Home_
+    , ingredients = bundle Pages.Ingredients.page Model.Ingredients Msg.Ingredients
     , notFound = static Pages.NotFound.view Model.NotFound
     }
 

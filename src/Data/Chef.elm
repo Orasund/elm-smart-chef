@@ -20,24 +20,29 @@ type alias Chef =
 list : List Chef
 list =
     [ { startWith = Just Property.carb
-      , include = [ Property.vegetable ]
+      , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
       , bases = ( Base.rice, [] )
       }
     , { startWith = Just Property.fish
-      , include = [ Property.vegetable ]
+      , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
       , bases = ( Base.rice, [ Base.wrap ] )
       }
     , { startWith = Just Property.beans
-      , include = [ Property.vegetable ]
+      , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
       , bases = ( Base.rice, [ Base.wrap ] )
       }
-    , { startWith = Just Property.vegetable
-      , include = [ Property.vegetable ]
+    , { startWith = Nothing
+      , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
       , bases = ( Base.rice, [ Base.wrap ] )
+      }
+    , { startWith = Just Property.sauce
+      , include = [ Property.vegetable, Property.beans ]
+      , exclude = [ Property.sauce ]
+      , bases = ( Base.wrap, [] )
       }
     ]
 
@@ -49,21 +54,20 @@ chooseFirstIngredient chef avaiableIngredientsList =
             Ingredient.set
                 |> AnySet.filter (\{ name } -> avaiableIngredientsList |> Set.member name)
     in
-    avaiableIngredients
-        |> (case chef.startWith of
-                Just property ->
-                    AnySet.filter
-                        (\ingredient ->
-                            ingredient.properties
-                                |> Set.member property.name
-                        )
+    case chef.startWith of
+        Just property ->
+            avaiableIngredients
+                |> AnySet.filter
+                    (\ingredient ->
+                        ingredient.properties
+                            |> Set.member property.name
+                    )
+                |> AnySet.toList
+                |> Random.List.choose
+                |> Random.map Tuple.first
 
-                Nothing ->
-                    identity
-           )
-        |> AnySet.toList
-        |> Random.List.choose
-        |> Random.map Tuple.first
+        Nothing ->
+            chooseIngredient chef avaiableIngredientsList
 
 
 chooseIngredient : Chef -> Set String -> Generator (Maybe Ingredient)

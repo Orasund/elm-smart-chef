@@ -1,4 +1,4 @@
-module Pages.Home_ exposing (Model, Msg(..), page)
+module Pages.Ingredients exposing (Model, Msg(..), page)
 
 import Bridge exposing (..)
 import Browser.Navigation as Nav
@@ -23,12 +23,12 @@ import Widget.Material.Typography as Typography
 
 
 page : Shared.Model -> Request -> Page.With Model Msg
-page shared req =
+page shared request =
     Page.advanced
         { init = init shared
-        , update = update req shared
+        , update = update request shared
         , subscriptions = subscriptions
-        , view = view req shared
+        , view = view request shared
         }
 
 
@@ -93,8 +93,8 @@ subscriptions _ =
 -- VIEW
 
 
-viewFinal : (Element Msg -> Element Msg) -> Dish -> List (Element Msg)
-viewFinal navigation meal =
+viewFinal : Dish -> List (Element Msg)
+viewFinal meal =
     [ Widget.button (Material.containedButton Config.palette)
         { text = "Noch ein Gericht"
         , icon = always Element.none
@@ -123,21 +123,20 @@ viewFinal navigation meal =
         |> Element.el [ Element.centerX, Element.centerY ]
         |> List.singleton
     , Element.el [] Element.none
-        |> navigation
         |> List.singleton
     ]
         |> List.concat
 
 
-viewIngredientPicker : (Element Msg -> Element Msg) -> Ingredient -> List (Element Msg)
-viewIngredientPicker navigation ingredient =
+viewIngredientPicker : Ingredient -> List (Element Msg)
+viewIngredientPicker ingredient =
     [ "Hast du "
         ++ ingredient.name
         ++ " zuhause?"
         |> Element.text
         |> Element.el [ Element.centerX, Element.alignTop ]
     , Element.el [] Element.none
-    , [ Widget.button (Material.textButton Config.palette)
+    , [ Widget.button (Material.containedButton Config.palette)
             { onPress = Just <| UseIngredient False
             , icon = always Element.none
             , text = "Nein"
@@ -149,40 +148,32 @@ viewIngredientPicker navigation ingredient =
             }
       ]
         |> Element.row
-            [ Element.alignBottom
+            [ Element.centerX
+            , Element.alignBottom
             , Element.spacing 16
             ]
-        |> navigation
     ]
 
 
-viewStart : (Element Msg -> Element Msg) -> List (Element Msg)
-viewStart navigation =
-    [ "Quick Chef"
-        |> Element.text
-        |> List.singleton
-        |> Element.paragraph Typography.h1
+viewList : (Element Msg -> Element Msg) -> List String -> List (Element Msg)
+viewList navigation list =
+    [ list
+        |> List.map
+            (\text ->
+                Widget.fullBleedItem (Material.fullBleedItem Config.palette)
+                    { text = text
+                    , onPress = Nothing
+                    , icon = always Element.none
+                    }
+            )
+        |> Widget.itemList Material.column
         |> Element.el
-            [ Element.centerX
-            , Element.alignTop
-            , Font.family [ Font.serif ]
-            , Font.center
+            [ Element.scrollbarY
+            , Element.height Element.fill
+            , Element.width Element.fill
             ]
-        |> List.singleton
-    , ("Hunger?"
-        |> Element.text
-      )
-        |> Element.el [ Element.centerX, Element.centerY ]
-        |> List.singleton
-    , Widget.button (Material.containedButton Config.palette)
-        { text = "Start"
-        , icon = always Element.none
-        , onPress = Just CreateMeal
-        }
-        |> navigation
-        |> List.singleton
+    , navigation Element.none
     ]
-        |> List.concat
 
 
 view : Request -> Shared.Model -> Model -> View Msg
@@ -193,16 +184,7 @@ view request shared model =
     in
     { title = Config.title
     , body =
-        (case ( shared.cooking, shared.ingredient ) of
-            ( Just (Done dish), _ ) ->
-                viewFinal navigation dish
-
-            ( _, Just ingredient ) ->
-                viewIngredientPicker navigation ingredient
-
-            ( _, _ ) ->
-                viewStart navigation
-        )
+        viewList navigation shared.ingredientList
             |> Element.column
                 [ Element.centerY
                 , Element.centerX
