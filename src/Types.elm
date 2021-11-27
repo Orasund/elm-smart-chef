@@ -3,6 +3,7 @@ module Types exposing (..)
 import Bridge as ToBackend exposing (ToBackend(..))
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
+import Data.Chef exposing (Chef)
 import Data.Dish as Meal exposing (Dish)
 import Gen.Pages as Pages
 import Random exposing (Seed)
@@ -28,6 +29,7 @@ type FrontendMsg
 
 type alias BackendModel =
     { meal : Dish
+    , chef : Chef
     , seed : Seed
     }
 

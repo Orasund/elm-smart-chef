@@ -32,6 +32,11 @@ init =
             { base = "Reis"
             , ingredients = []
             }
+      , chef =
+            { startWith = Nothing
+            , include = []
+            , exclude = []
+            }
       , seed = Random.initialSeed 42
       }
     , Random.independentSeed |> Random.generate NewSeed
