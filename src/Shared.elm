@@ -8,6 +8,8 @@ module Shared exposing
     , view
     )
 
+import Bridge exposing (..)
+import Browser.Navigation as Nav
 import Config
 import Data.Base as Base
 import Data.Chef as Chef exposing (Chef)
@@ -17,6 +19,7 @@ import Data.Ingredient exposing (Ingredient)
 import Dict exposing (Dict)
 import Element exposing (..)
 import Element.Region as Region
+import Gen.Route as Route exposing (Route(..))
 import Random exposing (Seed)
 import Request exposing (Request)
 import Set exposing (Set)
@@ -55,7 +58,8 @@ init _ json =
 
 
 type Msg
-    = IncludeIngredient
+    = StartWith Ingredient
+    | IncludeIngredient
     | ExcludeIngredient
 
 
@@ -107,8 +111,20 @@ cooseIngredient model newState =
 
 
 update : Request -> Msg -> Model -> ( Model, Cmd Msg )
-update _ msg model =
+update request msg model =
     case msg of
+        StartWith ingredient ->
+            ( { model | ingredient = Just ingredient }
+            , Cmd.batch
+                [ Just ingredient.name
+                    |> StartCooking
+                    |> sendToBackend
+                , Route.Home_
+                    |> Route.toHref
+                    |> Nav.pushUrl request.key
+                ]
+            )
+
         IncludeIngredient ->
             case model.cooking of
                 Just (Prepairing state) ->

@@ -69,7 +69,7 @@ update request shared msg model =
 
         CreateMeal ->
             ( model
-            , StartCooking
+            , StartCooking Nothing
                 |> sendToBackend
                 |> Effect.fromCmd
             )

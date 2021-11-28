@@ -6,6 +6,7 @@ import ElmSpa.Page
 import Gen.Params.Home_
 import Gen.Params.Ingredients
 import Gen.Params.NotFound
+import Gen.Params.Ingredients.Name_
 import Gen.Model as Model
 import Gen.Msg as Msg
 import Gen.Route as Route exposing (Route)
@@ -13,6 +14,7 @@ import Page exposing (Page)
 import Pages.Home_
 import Pages.Ingredients
 import Pages.NotFound
+import Pages.Ingredients.Name_
 import Request exposing (Request)
 import Shared
 import Task
@@ -39,6 +41,9 @@ init route =
     
         Route.NotFound ->
             pages.notFound.init ()
+    
+        Route.Ingredients__Name_ params ->
+            pages.ingredients__name_.init params
 
 
 update : Msg -> Model -> Shared.Model -> Url -> Key -> ( Model, Effect Msg )
@@ -49,6 +54,9 @@ update msg_ model_ =
     
         ( Msg.Ingredients msg, Model.Ingredients params model ) ->
             pages.ingredients.update params msg model
+    
+        ( Msg.Ingredients__Name_ msg, Model.Ingredients__Name_ params model ) ->
+            pages.ingredients__name_.update params msg model
 
         _ ->
             \_ _ _ -> ( model_, Effect.none )
@@ -68,6 +76,9 @@ view model_ =
     
         Model.NotFound params ->
             pages.notFound.view params ()
+    
+        Model.Ingredients__Name_ params model ->
+            pages.ingredients__name_.view params model
 
 
 subscriptions : Model -> Shared.Model -> Url -> Key -> Sub Msg
@@ -84,6 +95,9 @@ subscriptions model_ =
     
         Model.NotFound params ->
             pages.notFound.subscriptions params ()
+    
+        Model.Ingredients__Name_ params model ->
+            pages.ingredients__name_.subscriptions params model
 
 
 
@@ -94,11 +108,13 @@ pages :
     { home_ : Bundle Gen.Params.Home_.Params Pages.Home_.Model Pages.Home_.Msg
     , ingredients : Bundle Gen.Params.Ingredients.Params Pages.Ingredients.Model Pages.Ingredients.Msg
     , notFound : Static Gen.Params.NotFound.Params
+    , ingredients__name_ : Bundle Gen.Params.Ingredients.Name_.Params Pages.Ingredients.Name_.Model Pages.Ingredients.Name_.Msg
     }
 pages =
     { home_ = bundle Pages.Home_.page Model.Home_ Msg.Home_
     , ingredients = bundle Pages.Ingredients.page Model.Ingredients Msg.Ingredients
     , notFound = static Pages.NotFound.view Model.NotFound
+    , ingredients__name_ = bundle Pages.Ingredients.Name_.page Model.Ingredients__Name_ Msg.Ingredients__Name_
     }
 
 

@@ -11,7 +11,7 @@ import Effect exposing (Effect)
 import Element exposing (Element)
 import Element.Font as Font
 import Element.Input as Input
-import Gen.Route as Route exposing (Route)
+import Gen.Route as Route exposing (Route(..))
 import Lamdera
 import Page
 import Request exposing (Request)
@@ -55,6 +55,7 @@ init shared =
 
 type Msg
     = ToBackend ToBackend
+    | ToShared Shared.Msg
     | Navigate Route
 
 
@@ -64,6 +65,12 @@ update request shared msg model =
         Navigate route ->
             ( model
             , Route.toHref route |> Nav.pushUrl request.key |> Effect.fromCmd
+            )
+
+        ToShared sharedMsg ->
+            ( model
+            , sharedMsg
+                |> Effect.fromShared
             )
 
         ToBackend toBackendMsg ->
@@ -91,15 +98,19 @@ viewList navigation dict =
             (\ingredient ->
                 Widget.fullBleedItem (Material.fullBleedItem Config.palette)
                     { text = ingredient.name
-                    , onPress = Nothing
+                    , onPress =
+                        { name = ingredient.name }
+                            |> Route.Ingredients__Name_
+                            |> Navigate
+                            |> Just
                     , icon =
                         always
                             (Widget.textButton (Material.textButton Config.palette)
-                                { text = "Entfernen"
+                                { text = "Start"
                                 , onPress =
-                                    ingredient.name
-                                        |> RemoveIngredient
-                                        |> ToBackend
+                                    ingredient
+                                        |> StartWith
+                                        |> ToShared
                                         |> Just
                                 }
                                 |> Element.el [ Element.centerY ]

@@ -1,30 +1,40 @@
-module Data.Property exposing (Property, beans, carb, fish, sauce, vegetable)
+module Data.Property exposing (Property, beans, fish, list, protein, sauce, vegetable)
 
 
 type alias Property =
     { name : String }
 
 
+list : List Property
+list =
+    [ beans
+    , protein
+    , fish
+    , sauce
+    , vegetable
+    ]
+
+
 vegetable : Property
 vegetable =
-    { name = "vegetable" }
+    { name = "Gemüse" }
 
 
 fish : Property
 fish =
-    { name = "fish" }
+    { name = "Fisch" }
 
 
-carb : Property
-carb =
-    { name = "carb" }
+protein : Property
+protein =
+    { name = "Protein" }
 
 
 beans : Property
 beans =
-    { name = "beans" }
+    { name = "Hülsenfrüchte" }
 
 
 sauce : Property
 sauce =
-    { name = "sauce" }
+    { name = "Sauce" }

@@ -165,9 +165,13 @@ updateFromBackend msg model =
                                 |> Cooking.start avaiableIngredients
                                 |> Random.andThen
                                     (\c ->
-                                        c
-                                            |> Cooking.chooseIngredient
-                                            |> Random.map (\i -> ( c, i ))
+                                        model.shared.ingredient
+                                            |> Maybe.map (\i -> Random.constant ( c, Just i ))
+                                            |> Maybe.withDefault
+                                                (c
+                                                    |> Cooking.chooseIngredient
+                                                    |> Random.map (\i -> ( c, i ))
+                                                )
                                     )
                             )
             in
@@ -186,7 +190,7 @@ updateFromBackend msg model =
 
                 Nothing ->
                     ( model
-                    , StartCooking
+                    , StartCooking Nothing
                         |> Lamdera.sendToBackend
                     )
 

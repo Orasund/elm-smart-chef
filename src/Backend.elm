@@ -81,6 +81,20 @@ syncIngredients clientId model =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend sessionId clientId msg model =
     case msg of
+        UpdateIngredient name ingredient ->
+            let
+                newModel =
+                    { model
+                        | avaiableIngredients =
+                            model.avaiableIngredients
+                                |> Dict.remove name
+                                |> Dict.insert ingredient.name ingredient
+                    }
+            in
+            ( newModel
+            , syncIngredients clientId newModel
+            )
+
         RemoveIngredient ingredient ->
             let
                 newModel =
@@ -97,8 +111,19 @@ updateFromFrontend sessionId clientId msg model =
             , syncIngredients clientId model
             )
 
-        StartCooking ->
-            case Chef.list of
+        StartCooking maybeIngredient ->
+            let
+                chefList =
+                    maybeIngredient
+                        |> Maybe.andThen
+                            (\name ->
+                                model.avaiableIngredients
+                                    |> Dict.get name
+                            )
+                        |> Maybe.map Chef.using
+                        |> Maybe.withDefault Chef.list
+            in
+            case chefList of
                 head :: tail ->
                     let
                         ( chef, seed ) =

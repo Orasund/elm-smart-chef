@@ -1,4 +1,4 @@
-module Data.Chef exposing (Chef, chooseFirstIngredient, chooseIngredient, list)
+module Data.Chef exposing (Chef, chooseFirstIngredient, chooseIngredient, list, using)
 
 import Data.Base as Base exposing (Base)
 import Data.Ingredient as Ingredient exposing (Ingredient)
@@ -19,7 +19,7 @@ type alias Chef =
 
 list : List Chef
 list =
-    [ { startWith = Just Property.carb
+    [ { startWith = Just Property.protein
       , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
       , bases = ( Base.rice, [] )
@@ -45,6 +45,26 @@ list =
       , bases = ( Base.wrap, [] )
       }
     ]
+
+
+using : Ingredient -> List Chef
+using ingredient =
+    list
+        |> List.filter
+            (\chef ->
+                case chef.startWith of
+                    Just property ->
+                        ingredient.properties
+                            |> Set.member property.name
+
+                    Nothing ->
+                        chef.include
+                            |> List.any
+                                (\property ->
+                                    ingredient.properties
+                                        |> Set.member property.name
+                                )
+            )
 
 
 chooseFirstIngredient : Chef -> Dict String Ingredient -> Generator (Maybe Ingredient)

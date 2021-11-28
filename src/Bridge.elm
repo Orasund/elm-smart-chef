@@ -9,6 +9,7 @@ sendToBackend =
 
 
 type ToBackend
-    = StartCooking
+    = StartCooking (Maybe String)
     | SyncIngredients
     | RemoveIngredient String
+    | UpdateIngredient String Ingredient
