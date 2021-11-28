@@ -37,4 +37,4 @@ beans =
 
 sauce : Property
 sauce =
-    { name = "Sauce" }
+    { name = "Saucen Starter" }

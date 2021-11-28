@@ -22,27 +22,32 @@ list =
     [ { startWith = Just Property.protein
       , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
-      , bases = ( Base.rice, [] )
+      , bases = ( Base.rice, [ Base.potatos ] )
       }
     , { startWith = Just Property.fish
       , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
-      , bases = ( Base.rice, [ Base.wrap ] )
+      , bases = ( Base.rice, [ Base.wrap, Base.potatos ] )
       }
     , { startWith = Just Property.beans
       , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
-      , bases = ( Base.rice, [ Base.wrap ] )
+      , bases = ( Base.rice, [ Base.wrap, Base.couscous, Base.potatos ] )
       }
     , { startWith = Nothing
       , include = [ Property.vegetable, Property.sauce ]
       , exclude = []
-      , bases = ( Base.rice, [ Base.wrap ] )
+      , bases = ( Base.rice, [ Base.wrap, Base.couscous, Base.potatos ] )
       }
     , { startWith = Just Property.sauce
-      , include = [ Property.vegetable, Property.beans ]
+      , include = [ Property.vegetable, Property.beans, Property.fish ]
       , exclude = [ Property.sauce ]
-      , bases = ( Base.wrap, [] )
+      , bases = ( Base.wrap, [ Base.potatos ] )
+      }
+    , { startWith = Just Property.sauce
+      , include = [ Property.vegetable, Property.fish ]
+      , exclude = [ Property.sauce ]
+      , bases = ( Base.noodles, [] )
       }
     ]
 

@@ -49,13 +49,15 @@ init =
             , Ingredient.new "Ei" [ Property.protein ]
             , Ingredient.new "Brokkoli" [ Property.vegetable ]
             , Ingredient.new "Mais" [ Property.vegetable ]
-            , Ingredient.new "Pilze" [ Property.protein ]
-            , Ingredient.new "Tomaten" [ Property.vegetable ]
+            , Ingredient.new "Pilze" [ Property.sauce, Property.protein ]
+            , Ingredient.new "Tomaten" [ Property.sauce, Property.vegetable ]
             , Ingredient.new "Salat" [ Property.vegetable ]
             , Ingredient.new "Feta" [ Property.sauce ]
             , Ingredient.new "Pesto" [ Property.sauce ]
             , Ingredient.new "Sauerrahm" [ Property.sauce ]
             , Ingredient.new "Tofu" [ Property.protein ]
+            , Ingredient.new "Zucchini" [ Property.sauce, Property.vegetable ]
+            , Ingredient.new "Karotten" [ Property.vegetable ]
             ]
                 |> List.map (\ingredients -> ( ingredients.name, ingredients ))
                 |> Dict.fromList
@@ -122,24 +124,57 @@ updateFromFrontend sessionId clientId msg model =
                             )
                         |> Maybe.map Chef.using
                         |> Maybe.withDefault Chef.list
+
+                bases =
+                    chefList
+                        |> List.foldl
+                            (\chef dict ->
+                                let
+                                    ( head, tail ) =
+                                        chef.bases
+                                in
+                                head
+                                    :: tail
+                                    |> List.foldl
+                                        (\base ->
+                                            Dict.update base.name
+                                                (\maybe ->
+                                                    maybe
+                                                        |> Maybe.map ((::) chef)
+                                                        |> Maybe.withDefault [ chef ]
+                                                        |> Just
+                                                )
+                                        )
+                                        dict
+                            )
+                            Dict.empty
+
+                randomChef =
+                    bases
+                        |> Dict.keys
+                        |> Random.List.choose
+                        |> Random.andThen
+                            (\( maybe, _ ) ->
+                                maybe
+                                    |> Maybe.andThen (\base -> bases |> Dict.get base)
+                                    |> Maybe.withDefault []
+                                    |> Random.List.choose
+                                    |> Random.map Tuple.first
+                            )
             in
-            case chefList of
-                head :: tail ->
-                    let
-                        ( chef, seed ) =
-                            model.seed
-                                |> Random.step
-                                    (tail
-                                        |> Random.uniform head
-                                    )
-                    in
+            let
+                ( maybeChef, seed ) =
+                    model.seed |> Random.step randomChef
+            in
+            case maybeChef of
+                Just chef ->
                     ( { model | seed = seed }
                     , model.avaiableIngredients
                         |> NewChef chef
                         |> Lamdera.sendToFrontend clientId
                     )
 
-                [] ->
+                Nothing ->
                     ( model
                     , NoDishFound
                         |> Lamdera.sendToFrontend clientId

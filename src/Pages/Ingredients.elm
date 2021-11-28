@@ -135,7 +135,7 @@ view : Request -> Shared.Model -> Model -> View Msg
 view request shared model =
     let
         navigation =
-            Navigation.view Navigate request.route
+            Navigation.view { fun = Navigate, back = Home_ } request.route
     in
     { title = Config.title
     , body =

@@ -10,7 +10,7 @@ import Effect exposing (Effect)
 import Element exposing (Element)
 import Element.Font as Font
 import Element.Input as Input
-import Gen.Route as Route exposing (Route)
+import Gen.Route as Route exposing (Route(..))
 import Lamdera
 import Page
 import Request exposing (Request)
@@ -179,7 +179,7 @@ view : Request -> Shared.Model -> Model -> View Msg
 view request shared model =
     let
         navigation =
-            Navigation.view Navigate request.route
+            Navigation.view { fun = Navigate, back = Home_ } request.route
     in
     { title = Config.title
     , body =

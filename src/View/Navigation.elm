@@ -22,13 +22,13 @@ viewButton args route =
         }
 
 
-view : (Route -> msg) -> Route -> Element msg -> Element msg
-view fun route elem =
+view : { fun : Route -> msg, back : Route } -> Route -> Element msg -> Element msg
+view args route elem =
     [ (case route of
         Home_ ->
             route
                 |> viewButton
-                    { fun = fun
+                    { fun = args.fun
                     , route = Ingredients
                     , text = "Zutaten"
                     }
@@ -36,8 +36,8 @@ view fun route elem =
         _ ->
             route
                 |> viewButton
-                    { fun = fun
-                    , route = Home_
+                    { fun = args.fun
+                    , route = args.back
                     , text = "Zurück"
                     }
       )
