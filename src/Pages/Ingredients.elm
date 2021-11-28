@@ -127,7 +127,16 @@ viewList navigation dict =
             , Element.height Element.fill
             , Element.width Element.fill
             ]
-    , navigation Element.none
+    , Widget.textButton (Material.containedButton Config.palette)
+        { text = "Erstellen"
+        , onPress =
+            { name = "new" }
+                |> Route.Ingredients__Name_
+                |> Navigate
+                |> Just
+        }
+        |> Element.el [ Element.centerY ]
+        |> navigation
     ]
 
 
