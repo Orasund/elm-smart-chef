@@ -62,7 +62,6 @@ init request shared =
 
         ingredient =
             shared.ingredientList
-                |> Debug.log "list"
                 |> Dict.get name
                 |> Maybe.withDefault
                     { name = name
