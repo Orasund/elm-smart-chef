@@ -49,6 +49,11 @@ list =
       , exclude = [ Property.sauce ]
       , bases = ( Base.noodles, [] )
       }
+    , { startWith = Just Property.vegetable
+      , include = [ Property.vegetable, Property.protein ]
+      , exclude = []
+      , bases = ( Base.ramen, [] )
+      }
     ]
 
 

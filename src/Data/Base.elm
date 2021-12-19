@@ -1,4 +1,4 @@
-module Data.Base exposing (Base, couscous, noodles, potatos, rice, wrap)
+module Data.Base exposing (Base, couscous, noodles, potatos, ramen, rice, wrap)
 
 
 type alias Base =
@@ -22,7 +22,7 @@ wrap =
 
 noodles : Base
 noodles =
-    new "Nudeln"
+    new "Spagetti"
 
 
 couscous : Base
@@ -33,3 +33,8 @@ couscous =
 potatos : Base
 potatos =
     new "Kartoffeln"
+
+
+ramen : Base
+ramen =
+    new "Ramen"
